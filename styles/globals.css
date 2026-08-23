@@ -1,0 +1,283 @@
+/* Design tokens
+   ---------------
+   Subject: an engineering internship tracker. Instead of a generic
+   SaaS dashboard look, this borrows from technical drafting: blueprint
+   blue, grid paper, monospace data, drafting-stamp accents.
+
+   Color:
+     --paper:      #0E2A47  (blueprint navy background)
+     --paper-line: #1B3E63  (grid line on the blueprint)
+     --ink:        #EAF2FA  (near-white "pencil" text)
+     --ink-dim:    #9FB8CE  (secondary text)
+     --accent:     #FF8C42  (safety-orange drafting stamp accent)
+     --accent-dim: #C96A2E
+     --card:       #12314F  (card surface, slightly lifted off bg)
+
+   Type:
+     Display / labels: 'IBM Plex Mono' (technical, drafting feel)
+     Body: 'IBM Plex Sans' (clean, legible)
+
+   Layout:
+     Blueprint grid background (faint crosshatch), stamped title block
+     top-left like an engineering drawing, job cards laid out like
+     spec sheets with a corner "stamp" showing match score.
+
+   Signature element: each job card has a rotated corner stamp (like a
+   rubber "APPROVED"/percentage stamp on a blueprint) showing the
+   match score, and the page background is a faint blueprint grid.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --paper: #0E2A47;
+  --paper-line: #1B3E63;
+  --ink: #EAF2FA;
+  --ink-dim: #9FB8CE;
+  --accent: #FF8C42;
+  --accent-dim: #C96A2E;
+  --card: #12314F;
+  --card-border: #234B72;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+/* ---- Title block (drafting stamp, top-left) ---- */
+.titleblock {
+  border: 2px solid var(--ink);
+  padding: 20px 24px;
+  margin-bottom: 40px;
+  position: relative;
+  background: rgba(18, 49, 79, 0.6);
+}
+
+.titleblock::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--card-border);
+  pointer-events: none;
+}
+
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+.titleblock h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.15;
+}
+
+.titleblock p {
+  color: var(--ink-dim);
+  margin: 0;
+  font-size: 15px;
+  max-width: 60ch;
+}
+
+.meta-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-dim);
+  flex-wrap: wrap;
+}
+
+.meta-row span b {
+  color: var(--ink);
+}
+
+/* ---- Upload / skills input ---- */
+.input-panel {
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+
+.input-panel label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.input-panel textarea {
+  width: 100%;
+  min-height: 80px;
+  background: var(--paper);
+  border: 1px solid var(--card-border);
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.input-panel textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.input-hint {
+  color: var(--ink-dim);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* ---- Job list ---- */
+.job-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--ink-dim);
+  margin-bottom: 16px;
+  letter-spacing: 0.04em;
+}
+
+.job-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-card {
+  position: relative;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.job-card h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  line-height: 1.35;
+}
+
+.job-card .company {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.job-card .location-row {
+  color: var(--ink-dim);
+  font-size: 13px;
+  margin: 6px 0 0;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.job-card .skills-row {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.job-card .skills-row b {
+  color: var(--ink);
+}
+
+/* Corner stamp showing match score, rotated like a rubber stamp */
+.stamp {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  padding: 6px 10px;
+  transform: rotate(4deg);
+  white-space: nowrap;
+  text-align: center;
+  align-self: start;
+}
+
+.stamp.zero {
+  border-color: var(--card-border);
+  color: var(--ink-dim);
+}
+
+.apply-btn {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--paper);
+  background: var(--accent);
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+}
+
+.apply-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.empty-state, .loading-state {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink-dim);
+  padding: 40px 0;
+  text-align: center;
+}
+
+footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--card-border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 560px) {
+  .job-card {
+    grid-template-columns: 1fr;
+  }
+  .stamp {
+    justify-self: start;
+  }
+}
