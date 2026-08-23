@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { parseResumePdf } from "../lib/resumeParser";
 
 const SEEN_KEY = "jobfinder_seen_urls";
 const SKILLS_KEY = "jobfinder_skills";
@@ -33,6 +34,9 @@ export default function Home() {
   const [skillsInput, setSkillsInput] = useState("");
   const [seenUrls, setSeenUrls] = useState(new Set());
   const [showAll, setShowAll] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState("");
 
   useEffect(() => {
     const savedSkills = window.localStorage.getItem(SKILLS_KEY);
@@ -71,6 +75,37 @@ export default function Home() {
     window.localStorage.setItem(SKILLS_KEY, value);
   }
 
+  async function handleResumeUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setParseError("Please upload a PDF file.");
+      return;
+    }
+
+    setParsing(true);
+    setParseError(null);
+    setResumeFileName(file.name);
+
+    try {
+      const { skills } = await parseResumePdf(file);
+      if (skills.length === 0) {
+        setParseError(
+          "No known skills detected in that PDF. You can still type skills in manually below."
+        );
+      } else {
+        const value = skills.join(", ");
+        setSkillsInput(value);
+        window.localStorage.setItem(SKILLS_KEY, value);
+      }
+    } catch (err) {
+      setParseError("Couldn't read that PDF: " + err.message);
+    } finally {
+      setParsing(false);
+    }
+  }
+
   function markAllSeen() {
     const newSeen = new Set(seenUrls);
     jobs.forEach((j) => newSeen.add(j.url));
@@ -97,6 +132,33 @@ export default function Home() {
       </div>
 
       <div className="input-panel">
+        <label htmlFor="resume-upload">Upload your resume (PDF)</label>
+        <input
+          id="resume-upload"
+          type="file"
+          accept="application/pdf"
+          onChange={handleResumeUpload}
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 13,
+            color: "var(--ink-dim)",
+          }}
+        />
+        {parsing && <p className="input-hint">Reading your resume…</p>}
+        {resumeFileName && !parsing && !parseError && (
+          <p className="input-hint">
+            ✓ Loaded skills from <b style={{ color: "var(--ink)" }}>{resumeFileName}</b> — edit below if anything's missing.
+          </p>
+        )}
+        {parseError && (
+          <p className="input-hint" style={{ color: "var(--accent)" }}>{parseError}</p>
+        )}
+        <p className="input-hint" style={{ marginTop: 4 }}>
+          Your PDF is read entirely in your browser — it's never uploaded anywhere.
+        </p>
+      </div>
+
+      <div className="input-panel">
         <label htmlFor="skills">Your skills (comma-separated)</label>
         <textarea
           id="skills"
@@ -105,7 +167,7 @@ export default function Home() {
           placeholder="SolidWorks, MATLAB, Python, Robotics, Mechatronics, Arduino, CAD, Electrical Engineering"
         />
         <p className="input-hint">
-          Saved automatically in your browser. Match scores update as you type.
+          Auto-filled from your resume above, or type/edit manually. Saved automatically in your browser.
         </p>
       </div>
 
@@ -156,7 +218,7 @@ export default function Home() {
                     <b>Matched:</b> {job.matched.join(", ")}
                   </p>
                 )}
-                <a
+                
                   href={job.url}
                   target="_blank"
                   rel="noopener noreferrer"
