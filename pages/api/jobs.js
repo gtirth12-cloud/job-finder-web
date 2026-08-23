@@ -1,13 +1,18 @@
 // pages/api/jobs.js
 //
-// Serverless function: fetches the live internship/co-op/entry-level
-// list from mtlogs/2026-internships-and-jobs on GitHub (covers US,
-// Canada, and remote roles), parses the markdown table, and returns
-// only mechanical/electrical/mechatronics/robotics relevant postings
-// that are internships or co-ops (not full-time roles) as JSON.
+// Serverless function: fetches the live, daily-updated internship list
+// from jobright-ai/2026-Engineer-Internship on GitHub (covers Mechanical,
+// Electrical, Robotics, Hardware, Controls, Aerospace and more), parses
+// the markdown table, and returns only mechanical/electrical/mechatronics
+// /robotics relevant postings as JSON.
+//
+// This was chosen over mtlogs/2026-internships-and-jobs after testing:
+// that source's RippleMatch links were frequently stale/closed. Jobright's
+// links were verified working (including direct "Apply on Employer Site",
+// no account required) as of Aug 22 2026.
 
 const SOURCE_URL =
-  "https://raw.githubusercontent.com/mtlogs/2026-internships-and-jobs/main/README.md";
+  "https://raw.githubusercontent.com/jobright-ai/2026-Engineer-Internship/master/README.md";
 
 const RELEVANT_KEYWORDS = [
   "mechanical", "electrical", "mechatronic", "robotic", "robotics",
@@ -31,11 +36,12 @@ function cleanText(text) {
 function parseJobTable(markdown) {
   const jobs = [];
   const lines = markdown.split("\n");
+  let lastCompany = "";
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
-    if (!line.startsWith("|") || line.includes("----")) continue;
-    if (line.includes("Name") && line.includes("Role") && line.includes("Location Type")) continue;
+    if (!line.startsWith("|") || line.includes("---")) continue;
+    if (line.includes("Company") && line.includes("Job Title")) continue;
 
     const cells = line
       .slice(1, line.endsWith("|") ? -1 : undefined)
@@ -43,18 +49,22 @@ function parseJobTable(markdown) {
       .map((c) => c.trim());
 
     if (cells.length < 5) continue;
-    const [companyName, roleCell, location, locationType, roleType] = cells;
+    const [companyCell, titleCell, location, workModel, datePosted] = cells;
 
-    const roleLink = extractLink(roleCell);
-    if (!roleLink.text || !roleLink.url) continue;
+    const companyLink = extractLink(companyCell);
+    const companyName = companyLink.text || lastCompany;
+    if (companyLink.text) lastCompany = companyLink.text;
+
+    const titleLink = extractLink(titleCell);
+    if (!titleLink.text || !titleLink.url) continue;
 
     jobs.push({
-      company: cleanText(companyName),
-      title: cleanText(roleLink.text),
-      url: roleLink.url,
-      location: cleanText(location.split(",").slice(0, 2).join(",")), // trim long multi-location lists
-      workModel: locationType,
-      datePosted: roleType, // reused field for "Internship" / "Co-op" / "Full-Time"
+      company: companyName,
+      title: cleanText(titleLink.text),
+      url: titleLink.url,
+      location: cleanText(location),
+      workModel: workModel,
+      datePosted: "Posted " + datePosted,
     });
   }
 
@@ -62,13 +72,9 @@ function parseJobTable(markdown) {
 }
 
 function filterRelevant(jobs) {
-  return jobs.filter((job) => {
-    const titleLower = job.title.toLowerCase();
-    const roleTypeLower = job.datePosted.toLowerCase();
-    const isInternOrCoop = roleTypeLower.includes("intern") || roleTypeLower.includes("co-op");
-    const matchesKeyword = RELEVANT_KEYWORDS.some((kw) => titleLower.includes(kw));
-    return isInternOrCoop && matchesKeyword;
-  });
+  return jobs.filter((job) =>
+    RELEVANT_KEYWORDS.some((kw) => job.title.toLowerCase().includes(kw))
+  );
 }
 
 export default async function handler(req, res) {
