@@ -125,7 +125,7 @@ export default function Home() {
           postings, pulled daily and ranked against your skills.
         </p>
         <div className="meta-row">
-          <span>Source: <b>jobright-ai / 2026-Engineer-Internship</b></span>
+          <span>Source: <b>mtlogs / 2026-internships-and-jobs</b></span>
           <span>Total postings: <b>{jobs.length}</b></span>
           <span>New since last visit: <b>{newCount}</b></span>
         </div>
@@ -211,7 +211,7 @@ export default function Home() {
                   {job.title} — <span className="company">{job.company}</span>
                 </h3>
                 <p className="location-row">
-                  {job.location} · {job.workModel} · Posted {job.datePosted}
+                  {job.location} · {job.workModel} · {job.datePosted}
                 </p>
                 {job.matched.length > 0 && (
                   <p className="skills-row">
