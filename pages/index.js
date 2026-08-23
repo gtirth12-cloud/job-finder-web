@@ -224,7 +224,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="apply-btn"
                 >
-                  View & apply →
+                  View & apply ->
                 </a>
               </div>
               <div className={`stamp ${job.score === 0 ? "zero" : ""}`}>
